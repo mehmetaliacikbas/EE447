@@ -1,0 +1,14 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+                       
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\out_i2c.d -o.\objects\out_i2c.o -I.\RTE\_Target_1 -IC
+:\Users\kuyucut\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C
+123 -IE:\Keil\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__UVIS
+ION_VERSION SETA 528" --predefine="TM4C123GH6PM SETA 1" --list=.\listings\out_i
+2c.lst Out_I2C.s
+333 symbols in table

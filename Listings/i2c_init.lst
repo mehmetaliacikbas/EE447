@@ -1,0 +1,409 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;GPIO Registers
+    2 00000000 4000451C 
+                       GPIO_PORTA_DEN
+                               EQU              0x4000451C  ; Port Direction
+    3 00000000 40004420 
+                       GPIO_PORTA_AFSEL
+                               EQU              0x40004420  ; Alt Function enab
+                                                            le
+    4 00000000 4000450C 
+                       GPIO_PORTA_ODR
+                               EQU              0x4000450C  ; Analog enable
+    5 00000000 4000452C 
+                       GPIO_PORTA_PCTL
+                               EQU              0x4000452C  ; Alternate Functio
+                                                            ns
+    6 00000000         
+    7 00000000         ;I2C Registers
+    8 00000000 40021000 
+                       I2C1_MSA
+                               EQU              0x40021000  ; Slave address reg
+                                                            ister
+    9 00000000 40021004 
+                       I2C1_MCS
+                               EQU              0x40021004  ; 
+   10 00000000 40021008 
+                       I2C1_MDR
+                               EQU              0x40021008  ; Data register
+   11 00000000 4002100C 
+                       I2C1_MTPR
+                               EQU              0x4002100C  ; Rate register
+   12 00000000 40021020 
+                       I2C1_MCR
+                               EQU              0x40021020  ; Control register
+   13 00000000         
+   14 00000000         ;System Registers
+   15 00000000 400FE608 
+                       SYSCTL_RCGCGPIO
+                               EQU              0x400FE608  ; GPIO Gate Control
+                                                            
+   16 00000000 400FE620 
+                       SYSCTL_RCGCI2C
+                               EQU              0x400FE620  ; GPIO Gate Control
+                                                            
+   17 00000000         
+   18 00000000         ;I2C Run Modes
+   19 00000000 00000003 
+                       START_WRITE
+                               EQU              0x03        ; Start condition w
+                                                            ith a byte write
+   20 00000000 00000005 
+                       STOP    EQU              0x05
+   21 00000000         
+   22 00000000         ;PA6 set as I2C1SCL
+   23 00000000         ;PA7 set as I2C1SDA
+   24 00000000         
+   25 00000000         ;*******************************************************
+                       ********
+   26 00000000         ; Program section
+   27 00000000         ;*******************************************************
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+                       ********
+   28 00000000         ;LABEL  DIRECTIVE VALUE   COMMENT
+   29 00000000         
+   30 00000000                 AREA             routines, CODE, READONLY
+   31 00000000                 THUMB
+   32 00000000                 EXPORT           I2C_Init    ;I2C1 Initializatio
+                                                            n
+   33 00000000                 EXPORT           Write_I2C   ;I2C1 a sample send
+                                                             SR
+   34 00000000         
+   35 00000000         I2C_Init
+                               PROC
+   36 00000000 4929            LDR              R1, =SYSCTL_RCGCI2C 
+                                                            ; start I2C Clock
+   37 00000002 6808            LDR              R0, [R1]
+   38 00000004 F040 0002       ORR              R0, R0, #0x2 ; set bit 1 
+   39 00000008 6008            STR              R0, [R1]
+   40 0000000A         
+   41 0000000A 4928            LDR              R1, =SYSCTL_RCGCGPIO 
+                                                            ; start GPIO clock
+   42 0000000C 6808            LDR              R0, [R1]
+   43 0000000E F040 0001       ORR              R0, R0, #0x01 ; set bit 1
+   44 00000012 6008            STR              R0, [R1]
+   45 00000014         
+   46 00000014 BF00            NOP
+   47 00000016 BF00            NOP
+   48 00000018 BF00            NOP
+   49 0000001A BF00            NOP
+   50 0000001C BF00            NOP
+   51 0000001E         
+   52 0000001E         ;GPIO Initialization
+   53 0000001E         
+   54 0000001E 4924            LDR              R1, =GPIO_PORTA_AFSEL ; Set as 
+                                                            Alt function pin
+   55 00000020 6808            LDR              R0, [R1]
+   56 00000022 F040 00C0       ORR              R0, R0, #0xC0 ; set bit 7,6 for
+                                                             port A
+   57 00000026 6008            STR              R0, [R1]
+   58 00000028         
+   59 00000028 4922            LDR              R1, =GPIO_PORTA_ODR 
+                                                            ; Set as open-drain
+                                                            
+   60 0000002A 6808            LDR              R0, [R1]
+   61 0000002C F040 0080       ORR              R0, R0, #0x80 ; set bit 7 for p
+                                                            ort A
+   62 00000030 6008            STR              R0, [R1]
+   63 00000032         
+   64 00000032 4921            LDR              R1, =GPIO_PORTA_DEN ; Enable di
+                                                            gital pins
+   65 00000034 6808            LDR              R0, [R1]
+   66 00000036 F040 00C0       ORR              R0, R0, #0xC0 ; set bit 7,6 for
+                                                             port A
+   67 0000003A 6008            STR              R0, [R1]
+   68 0000003C         
+   69 0000003C 491F            LDR              R1, =GPIO_PORTA_PCTL ; Select f
+                                                            unction as I2C
+   70 0000003E 6808            LDR              R0, [R1]
+   71 00000040 F020 407F       BIC              R0, R0, #0xFF000000
+   72 00000044 F040 504C       ORR              R0, R0, #0x33000000 ; write 0x3
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+                                                             to 31:28, 27:24 po
+                                                            rt A
+   73 00000048 6008            STR              R0, [R1]
+   74 0000004A         
+   75 0000004A         ;I2C_Initialization  
+   76 0000004A         
+   77 0000004A 491D            LDR              R1, =I2C1_MCR 
+                                                            ; Enable as master
+   78 0000004C F04F 0010       MOV              R0, #0x10   ; set bit 4
+   79 00000050 6008            STR              R0, [R1]
+   80 00000052         
+   81 00000052 491C            LDR              R1, =I2C1_MTPR ; Set speed as 4
+                                                            00 Kbps
+   82 00000054 F04F 0001       MOV              R0, #0x01   ; set bit 0
+   83 00000058 6008            STR              R0, [R1]
+   84 0000005A         
+   85 0000005A 4770            BX               LR
+   86 0000005C                 ENDP
+   87 0000005C         
+   88 0000005C         Write_I2C
+                               PROC
+   89 0000005C B500            PUSH             {LR}
+   90 0000005E B407            PUSH             {R0-R2}
+   91 00000060 F81A 2B01       LDRB             R2, [R10], #0x1 ; Read a sample
+                                                             from memory pointe
+                                                            d by R10
+   92 00000064         
+   93 00000064 4918            LDR              R1, =I2C1_MSA 
+                                                            ; Set slave address
+                                                            
+   94 00000066 F04F 00C4       MOV              R0, #0xC4   ; DEV_ID = 0x62 || 
+                                                            R/W = 0x0
+   95 0000006A 6008            STR              R0, [R1]
+   96 0000006C         
+   97 0000006C 4917            LDR              R1, =I2C1_MDR ; Set first byte
+   98 0000006E F04F 0000       MOV              R0, #0x0    ; Most significant 
+                                                            1 hex is sent
+   99 00000072 6008            STR              R0, [R1]
+  100 00000074         
+  101 00000074 4916            LDR              R1, =I2C1_MCS ; Transmission st
+                                                            arts and first byte
+                                                             send 
+  102 00000076 F04F 0003       LDR              R0, =START_WRITE ; Start = 0x4
+  103 0000007A 6008            STR              R0, [R1]
+  104 0000007C         
+  105 0000007C 4914    I2Cloop1
+                               LDR              R1, =I2C1_MCS ; Busy bit checke
+                                                            d for end of transm
+                                                            ission
+  106 0000007E 6808            LDR              R0, [R1]
+  107 00000080 F010 0001       ANDS             R0, R0, #0x1
+  108 00000084 D1FA            BNE              I2Cloop1
+  109 00000086         
+  110 00000086 4911            LDR              R1, =I2C1_MDR ; Set second byte
+                                                            
+  111 00000088 F002 00FF       AND              R0, R2, #0xFF ; Least significa
+                                                            nt 1 hex is sent
+  112 0000008C 6008            STR              R0, [R1]
+  113 0000008E         
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  114 0000008E 4910            LDR              R1, =I2C1_MCS ; Second byte sta
+                                                            rts and transmissio
+                                                            n stops
+  115 00000090 F04F 0005       MOV              R0, #STOP   ; STOP = 0x5
+  116 00000094 6008            STR              R0, [R1]
+  117 00000096         
+  118 00000096 490E    I2Cloop2
+                               LDR              R1, =I2C1_MCS 
+                                                            ; Busy bit checked
+  119 00000098 6808            LDR              R0, [R1]
+  120 0000009A F010 0001       ANDS             R0, R0, #0x1
+  121 0000009E D1FA            BNE              I2Cloop2
+  122 000000A0         
+  123 000000A0 BC07            POP              {R0-R2}
+  124 000000A2 F85D EB04       POP              {LR}
+  125 000000A6 4770            BX               LR          ; A sample is sent 
+                                                            to DAC returning fr
+                                                            om SR
+  126 000000A8         
+  127 000000A8                 ENDP
+  128 000000A8                 ALIGN
+  129 000000A8                 END
+              400FE620 
+              400FE608 
+              40004420 
+              4000450C 
+              4000451C 
+              4000452C 
+              40021020 
+              4002100C 
+              40021000 
+              40021008 
+              40021004 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\i2c_init.d -o.\objects\i2c_init.o -I.\RTE\_Target_1 -
+IC:\Users\kuyucut\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM
+4C123 -IE:\Keil\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__UV
+ISION_VERSION SETA 528" --predefine="TM4C123GH6PM SETA 1" --list=.\listings\i2c
+_init.lst I2C_Init.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+I2C_Init 00000000
+
+Symbol: I2C_Init
+   Definitions
+      At line 35 in file I2C_Init.s
+   Uses
+      At line 32 in file I2C_Init.s
+Comment: I2C_Init used once
+I2Cloop1 0000007C
+
+Symbol: I2Cloop1
+   Definitions
+      At line 105 in file I2C_Init.s
+   Uses
+      At line 108 in file I2C_Init.s
+Comment: I2Cloop1 used once
+I2Cloop2 00000096
+
+Symbol: I2Cloop2
+   Definitions
+      At line 118 in file I2C_Init.s
+   Uses
+      At line 121 in file I2C_Init.s
+Comment: I2Cloop2 used once
+Write_I2C 0000005C
+
+Symbol: Write_I2C
+   Definitions
+      At line 88 in file I2C_Init.s
+   Uses
+      At line 33 in file I2C_Init.s
+Comment: Write_I2C used once
+routines 00000000
+
+Symbol: routines
+   Definitions
+      At line 30 in file I2C_Init.s
+   Uses
+      None
+Comment: routines unused
+5 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+GPIO_PORTA_AFSEL 40004420
+
+Symbol: GPIO_PORTA_AFSEL
+   Definitions
+      At line 3 in file I2C_Init.s
+   Uses
+      At line 54 in file I2C_Init.s
+Comment: GPIO_PORTA_AFSEL used once
+GPIO_PORTA_DEN 4000451C
+
+Symbol: GPIO_PORTA_DEN
+   Definitions
+      At line 2 in file I2C_Init.s
+   Uses
+      At line 64 in file I2C_Init.s
+Comment: GPIO_PORTA_DEN used once
+GPIO_PORTA_ODR 4000450C
+
+Symbol: GPIO_PORTA_ODR
+   Definitions
+      At line 4 in file I2C_Init.s
+   Uses
+      At line 59 in file I2C_Init.s
+Comment: GPIO_PORTA_ODR used once
+GPIO_PORTA_PCTL 4000452C
+
+Symbol: GPIO_PORTA_PCTL
+   Definitions
+      At line 5 in file I2C_Init.s
+   Uses
+      At line 69 in file I2C_Init.s
+Comment: GPIO_PORTA_PCTL used once
+I2C1_MCR 40021020
+
+Symbol: I2C1_MCR
+   Definitions
+      At line 12 in file I2C_Init.s
+   Uses
+      At line 77 in file I2C_Init.s
+Comment: I2C1_MCR used once
+I2C1_MCS 40021004
+
+Symbol: I2C1_MCS
+   Definitions
+      At line 9 in file I2C_Init.s
+   Uses
+      At line 101 in file I2C_Init.s
+      At line 105 in file I2C_Init.s
+      At line 114 in file I2C_Init.s
+      At line 118 in file I2C_Init.s
+
+I2C1_MDR 40021008
+
+Symbol: I2C1_MDR
+   Definitions
+      At line 10 in file I2C_Init.s
+   Uses
+      At line 97 in file I2C_Init.s
+      At line 110 in file I2C_Init.s
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+
+I2C1_MSA 40021000
+
+Symbol: I2C1_MSA
+   Definitions
+      At line 8 in file I2C_Init.s
+   Uses
+      At line 93 in file I2C_Init.s
+Comment: I2C1_MSA used once
+I2C1_MTPR 4002100C
+
+Symbol: I2C1_MTPR
+   Definitions
+      At line 11 in file I2C_Init.s
+   Uses
+      At line 81 in file I2C_Init.s
+Comment: I2C1_MTPR used once
+START_WRITE 00000003
+
+Symbol: START_WRITE
+   Definitions
+      At line 19 in file I2C_Init.s
+   Uses
+      At line 102 in file I2C_Init.s
+Comment: START_WRITE used once
+STOP 00000005
+
+Symbol: STOP
+   Definitions
+      At line 20 in file I2C_Init.s
+   Uses
+      At line 115 in file I2C_Init.s
+Comment: STOP used once
+SYSCTL_RCGCGPIO 400FE608
+
+Symbol: SYSCTL_RCGCGPIO
+   Definitions
+      At line 15 in file I2C_Init.s
+   Uses
+      At line 41 in file I2C_Init.s
+Comment: SYSCTL_RCGCGPIO used once
+SYSCTL_RCGCI2C 400FE620
+
+Symbol: SYSCTL_RCGCI2C
+   Definitions
+      At line 16 in file I2C_Init.s
+   Uses
+      At line 36 in file I2C_Init.s
+Comment: SYSCTL_RCGCI2C used once
+13 symbols
+354 symbols in table

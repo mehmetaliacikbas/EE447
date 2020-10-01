@@ -1,0 +1,446 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;GPIO Registers
+    2 00000000 40024400 
+                       GPIO_PORTE_DIR
+                               EQU              0x40024400  ; Port Direction
+    3 00000000 40024420 
+                       GPIO_PORTE_AFSEL
+                               EQU              0x40024420  ; Alt Function enab
+                                                            le
+    4 00000000 40024528 
+                       GPIO_PORTE_AMSEL
+                               EQU              0x40024528  ; Analog enable
+    5 00000000 4002452C 
+                       GPIO_PORTE_PCTL
+                               EQU              0x4002452C  ; Alternate Functio
+                                                            ns
+    6 00000000         
+    7 00000000         ;Timer2 Registers
+    8 00000000 40039000 
+                       ADC1_ACTSS
+                               EQU              0x40039000
+    9 00000000 40039014 
+                       ADC1_EMUX
+                               EQU              0x40039014
+   10 00000000 4003901C 
+                       ADC1_TSSEL
+                               EQU              0x4003901C
+   11 00000000 400390A0 
+                       ADC1_SSMUX3
+                               EQU              0x400390A0
+   12 00000000 400390A4 
+                       ADC1_SSCTL3
+                               EQU              0x400390A4
+   13 00000000 40039038 
+                       ADC1_CTL
+                               EQU              0x40039038
+   14 00000000 40039FC4 
+                       ADC1_PC EQU              0x40039FC4
+   15 00000000 40039004 
+                       ADC1_RIS
+                               EQU              0x40039004
+   16 00000000 400390A8 
+                       ADC1_SSFIFO3
+                               EQU              0x400390A8
+   17 00000000 4003900C 
+                       ADC1_ISC
+                               EQU              0x4003900C
+   18 00000000 40039028 
+                       ADC1_PSSI
+                               EQU              0x40039028
+   19 00000000         
+   20 00000000         ;System Registers
+   21 00000000 400FE608 
+                       SYSCTL_RCGCGPIO
+                               EQU              0x400FE608  ; GPIO Gate Control
+                                                            
+   22 00000000 400FE638 
+                       SYSCTL_RCGCADC
+                               EQU              0x400FE638  ; GPIO Gate Control
+                                                            
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   23 00000000         
+   24 00000000 00000640 
+                       OFFSET  EQU              0x640
+   25 00000000         
+   26 00000000         ;PB0 set as timer2
+   27 00000000         
+   28 00000000         ;*******************************************************
+                       ********
+   29 00000000         ; Program section
+   30 00000000         ;*******************************************************
+                       ********
+   31 00000000         ;LABEL  DIRECTIVE VALUE   COMMENT
+   32 00000000         
+   33 00000000                 AREA             routines, CODE, READONLY
+   34 00000000                 THUMB
+   35 00000000                 EXPORT           ADC2_Init
+   36 00000000                 EXPORT           ADC_Sample
+   37 00000000         
+   38 00000000         ADC2_Init
+                               PROC
+   39 00000000 492D            LDR              R1, =SYSCTL_RCGCADC 
+                                                            ; start timer Clock
+                                                            
+   40 00000002 6808            LDR              R0, [R1]
+   41 00000004 F040 0002       ORR              R0, R0, #0x2
+   42 00000008 6008            STR              R0, [R1]
+   43 0000000A         
+   44 0000000A 492C            LDR              R1, =SYSCTL_RCGCGPIO 
+                                                            ; start GPIO clock
+   45 0000000C 6808            LDR              R0, [R1]
+   46 0000000E F040 0010       ORR              R0, R0, #0x10
+   47 00000012 6008            STR              R0, [R1]
+   48 00000014         
+   49 00000014 BF00            NOP
+   50 00000016 BF00            NOP
+   51 00000018 BF00            NOP
+   52 0000001A BF00            NOP
+   53 0000001C         ;GPIO_Init
+   54 0000001C 4928            LDR              R1, =GPIO_PORTE_AFSEL ; Alterna
+                                                            tive function
+   55 0000001E 6808            LDR              R0, [R1]
+   56 00000020 F040 0004       ORR              R0, R0, #0x4
+   57 00000024 6008            STR              R0, [R1]
+   58 00000026         
+   59 00000026 4927            LDR              R1, =GPIO_PORTE_PCTL ; Default 
+                                                            alternate function
+   60 00000028 6808            LDR              R0, [R1]
+   61 0000002A F420 6070       BIC              R0, R0, #0x0000F00
+   62 0000002E 6008            STR              R0, [R1]
+   63 00000030         
+   64 00000030 4925            LDR              R1, =GPIO_PORTE_DIR ; set direc
+                                                            tion of PE3
+   65 00000032 6808            LDR              R0, [R1]
+   66 00000034 F020 0004       BIC              R0, R0, #0x4 ; clear bit 4 for 
+                                                            input
+   67 00000038 6008            STR              R0, [R1]
+   68 0000003A         
+   69 0000003A 4924            LDR              R1, =GPIO_PORTE_AMSEL 
+                                                            ; enable analog
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   70 0000003C 6808            LDR              R0, [R1]
+   71 0000003E F040 0004       ORR              R0, R0, #0x4
+   72 00000042 6008            STR              R0, [R1]
+   73 00000044         ;ADC_Init
+   74 00000044 4922            LDR              R1, =ADC1_ACTSS 
+                                                            ; Disable sampler
+   75 00000046 6808            LDR              R0, [R1]
+   76 00000048 F020 0008       BIC              R0, R0, #0x8 ; clear bit 3 
+   77 0000004C 6008            STR              R0, [R1]
+   78 0000004E         
+   79 0000004E 4921            LDR              R1, =ADC1_EMUX ; Trigger source
+                                                             selected
+   80 00000050 6808            LDR              R0, [R1]
+   81 00000052 F420 4070       BIC              R0, R0, #0xF000 ; clear bit 4 f
+                                                            or input
+   82 00000056 6008            STR              R0, [R1]
+   83 00000058         
+   84 00000058 491F            LDR              R1, =ADC1_SSMUX3 
+                                                            ; Set input port
+   85 0000005A 6808            LDR              R0, [R1]
+   86 0000005C F020 000F       BIC              R0, R0, #0xF ; clear bit 4 for 
+                                                            input
+   87 00000060 F040 0001       ORR              R0, R0, #0x1
+   88 00000064 6008            STR              R0, [R1]
+   89 00000066         
+   90 00000066 491D            LDR              R1, =ADC1_SSCTL3 ; set interrup
+                                                            t and single sampli
+                                                            ng
+   91 00000068 6808            LDR              R0, [R1]
+   92 0000006A F040 0006       ORR              R0, R0, #0x6 ; set bit 1 and bi
+                                                            t 2
+   93 0000006E 6008            STR              R0, [R1]
+   94 00000070         
+   95 00000070 491B            LDR              R1, =ADC1_PC 
+                                                            ; set sampling rate
+                                                            
+   96 00000072 6808            LDR              R0, [R1]
+   97 00000074 F040 0007       ORR              R0, R0, #0x7 
+                                                            ; set 0x7 for 1Msps
+                                                            
+   98 00000078 6008            STR              R0, [R1]
+   99 0000007A         
+  100 0000007A 4915            LDR              R1, =ADC1_ACTSS 
+                                                            ; Enable sampler 3
+  101 0000007C 6808            LDR              R0, [R1]
+  102 0000007E F040 0008       ORR              R0, R0, #0x8 ; set bit 3 
+  103 00000082 6008            STR              R0, [R1]
+  104 00000084 4770            BX               LR
+  105 00000086                 ENDP
+  106 00000086         ADC_Sample
+                               PROC
+  107 00000086         
+  108 00000086 4917            LDR              R1, =ADC1_PSSI
+  109 00000088 6808            LDR              R0, [R1]
+  110 0000008A F040 0008       ORR              R0, R0, #0x8
+  111 0000008E 6008            STR              R0, [R1]
+  112 00000090         
+  113 00000090 4915            LDR              R1, =ADC1_RIS
+  114 00000092 6808    poll    LDR              R0, [R1]
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  115 00000094 F010 0008       ANDS             R0, R0, #0x8
+  116 00000098 D0FB            BEQ              poll
+  117 0000009A         
+  118 0000009A 4914            LDR              R1, =ADC1_SSFIFO3
+  119 0000009C F8D1 8000       LDR              R8, [R1]
+  120 000000A0 EB08 0008       ADD              R0, R8, R8
+  121 000000A4 4480            ADD              R8, R0, R8
+  122 000000A6 EA4F 0858       MOV              R8, R8, LSR #0x1
+  123 000000AA F508 68C8       ADD              R8, R8, #OFFSET
+  124 000000AE         
+  125 000000AE         
+  126 000000AE 4910            LDR              R1, =ADC1_ISC
+  127 000000B0 F04F 0008       MOV              R0, #0x8
+  128 000000B4 6008            STR              R0, [R1]
+  129 000000B6         
+  130 000000B6 4770            BX               LR
+  131 000000B8                 ENDP
+  132 000000B8         
+  133 000000B8                 ALIGN
+  134 000000B8                 END
+              400FE638 
+              400FE608 
+              40024420 
+              4002452C 
+              40024400 
+              40024528 
+              40039000 
+              40039014 
+              400390A0 
+              400390A4 
+              40039FC4 
+              40039028 
+              40039004 
+              400390A8 
+              4003900C 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\adc2_init.d -o.\objects\adc2_init.o -I.\RTE\_Target_1
+ -IC:\Users\kuyucut\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\
+TM4C123 -IE:\Keil\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__
+UVISION_VERSION SETA 528" --predefine="TM4C123GH6PM SETA 1" --list=.\listings\a
+dc2_init.lst ADC2_Init.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+ADC2_Init 00000000
+
+Symbol: ADC2_Init
+   Definitions
+      At line 38 in file ADC2_Init.s
+   Uses
+      At line 35 in file ADC2_Init.s
+Comment: ADC2_Init used once
+ADC_Sample 00000086
+
+Symbol: ADC_Sample
+   Definitions
+      At line 106 in file ADC2_Init.s
+   Uses
+      At line 36 in file ADC2_Init.s
+Comment: ADC_Sample used once
+poll 00000092
+
+Symbol: poll
+   Definitions
+      At line 114 in file ADC2_Init.s
+   Uses
+      At line 116 in file ADC2_Init.s
+Comment: poll used once
+routines 00000000
+
+Symbol: routines
+   Definitions
+      At line 33 in file ADC2_Init.s
+   Uses
+      None
+Comment: routines unused
+4 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+ADC1_ACTSS 40039000
+
+Symbol: ADC1_ACTSS
+   Definitions
+      At line 8 in file ADC2_Init.s
+   Uses
+      At line 74 in file ADC2_Init.s
+      At line 100 in file ADC2_Init.s
+
+ADC1_CTL 40039038
+
+Symbol: ADC1_CTL
+   Definitions
+      At line 13 in file ADC2_Init.s
+   Uses
+      None
+Comment: ADC1_CTL unused
+ADC1_EMUX 40039014
+
+Symbol: ADC1_EMUX
+   Definitions
+      At line 9 in file ADC2_Init.s
+   Uses
+      At line 79 in file ADC2_Init.s
+Comment: ADC1_EMUX used once
+ADC1_ISC 4003900C
+
+Symbol: ADC1_ISC
+   Definitions
+      At line 17 in file ADC2_Init.s
+   Uses
+      At line 126 in file ADC2_Init.s
+Comment: ADC1_ISC used once
+ADC1_PC 40039FC4
+
+Symbol: ADC1_PC
+   Definitions
+      At line 14 in file ADC2_Init.s
+   Uses
+      At line 95 in file ADC2_Init.s
+Comment: ADC1_PC used once
+ADC1_PSSI 40039028
+
+Symbol: ADC1_PSSI
+   Definitions
+      At line 18 in file ADC2_Init.s
+   Uses
+      At line 108 in file ADC2_Init.s
+Comment: ADC1_PSSI used once
+ADC1_RIS 40039004
+
+Symbol: ADC1_RIS
+   Definitions
+      At line 15 in file ADC2_Init.s
+   Uses
+      At line 113 in file ADC2_Init.s
+Comment: ADC1_RIS used once
+ADC1_SSCTL3 400390A4
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Absolute symbols
+
+Symbol: ADC1_SSCTL3
+   Definitions
+      At line 12 in file ADC2_Init.s
+   Uses
+      At line 90 in file ADC2_Init.s
+Comment: ADC1_SSCTL3 used once
+ADC1_SSFIFO3 400390A8
+
+Symbol: ADC1_SSFIFO3
+   Definitions
+      At line 16 in file ADC2_Init.s
+   Uses
+      At line 118 in file ADC2_Init.s
+Comment: ADC1_SSFIFO3 used once
+ADC1_SSMUX3 400390A0
+
+Symbol: ADC1_SSMUX3
+   Definitions
+      At line 11 in file ADC2_Init.s
+   Uses
+      At line 84 in file ADC2_Init.s
+Comment: ADC1_SSMUX3 used once
+ADC1_TSSEL 4003901C
+
+Symbol: ADC1_TSSEL
+   Definitions
+      At line 10 in file ADC2_Init.s
+   Uses
+      None
+Comment: ADC1_TSSEL unused
+GPIO_PORTE_AFSEL 40024420
+
+Symbol: GPIO_PORTE_AFSEL
+   Definitions
+      At line 3 in file ADC2_Init.s
+   Uses
+      At line 54 in file ADC2_Init.s
+Comment: GPIO_PORTE_AFSEL used once
+GPIO_PORTE_AMSEL 40024528
+
+Symbol: GPIO_PORTE_AMSEL
+   Definitions
+      At line 4 in file ADC2_Init.s
+   Uses
+      At line 69 in file ADC2_Init.s
+Comment: GPIO_PORTE_AMSEL used once
+GPIO_PORTE_DIR 40024400
+
+Symbol: GPIO_PORTE_DIR
+   Definitions
+      At line 2 in file ADC2_Init.s
+   Uses
+      At line 64 in file ADC2_Init.s
+Comment: GPIO_PORTE_DIR used once
+GPIO_PORTE_PCTL 4002452C
+
+Symbol: GPIO_PORTE_PCTL
+   Definitions
+      At line 5 in file ADC2_Init.s
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Absolute symbols
+
+   Uses
+      At line 59 in file ADC2_Init.s
+Comment: GPIO_PORTE_PCTL used once
+OFFSET 00000640
+
+Symbol: OFFSET
+   Definitions
+      At line 24 in file ADC2_Init.s
+   Uses
+      At line 123 in file ADC2_Init.s
+Comment: OFFSET used once
+SYSCTL_RCGCADC 400FE638
+
+Symbol: SYSCTL_RCGCADC
+   Definitions
+      At line 22 in file ADC2_Init.s
+   Uses
+      At line 39 in file ADC2_Init.s
+Comment: SYSCTL_RCGCADC used once
+SYSCTL_RCGCGPIO 400FE608
+
+Symbol: SYSCTL_RCGCGPIO
+   Definitions
+      At line 21 in file ADC2_Init.s
+   Uses
+      At line 44 in file ADC2_Init.s
+Comment: SYSCTL_RCGCGPIO used once
+18 symbols
+358 symbols in table

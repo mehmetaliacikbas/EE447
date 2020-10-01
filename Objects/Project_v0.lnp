@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp
+".\objects\main.o"
+".\objects\i2c_init.o"
+".\objects\startup.o"
+".\objects\timer2_init.o"
+".\objects\timer3_init.o"
+".\objects\adc_init.o"
+".\objects\clk_init.o"
+".\objects\adc2_init.o"
+".\objects\gpio_init.o"
+".\objects\delay_100.o"
+".\objects\led_init.o"
+--ro-base 0x00000000 --entry 0x00000000 --rw-base 0x20000000 --entry Reset_Handler --first __Vectors --strict --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\Project_v0.map" -o .\Objects\Project_v0.axf

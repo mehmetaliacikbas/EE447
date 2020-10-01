@@ -1,0 +1,112 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;*******************************************************
+                       *************
+    2 00000000         ; 100 msec delay is adjusted by using clock period and a
+                        number of
+    3 00000000         ;instructions. Frequency of microprocessor is 16MHz then
+                        period is 62.5
+    4 00000000         ;nsec. Then the amount of instructions to be used is cal
+                       culated as 
+    5 00000000         ;100msec/62.5nsec = 1,600,00 instruction. its done by us
+                       ing a loop that
+    6 00000000         ;has 10 instruction and called 160,000 times. By the way
+                        ADD, CMP, BEQ,
+    7 00000000         ;B and NOP instructions takes one clock per instruction.
+                       
+    8 00000000         ;*******************************************************
+                       *************
+    9 00000000 00027100 
+                       M100SEC EQU              160000
+   10 00000000         ;LABEL DIRECTIVE VALUE      COMMENT
+   11 00000000                 AREA             |.text| , READONLY, CODE
+   12 00000000                 THUMB
+   13 00000000                 EXPORT           d100ms
+   14 00000000         
+   15 00000000         d100ms  PROC
+   16 00000000 B500            PUSH             {LR}
+   17 00000002 B403            PUSH             {R0-R1}
+   18 00000004 4907            LDR              R1,=M100SEC
+   19 00000006 F100 0001 
+                       loop    ADD              R0,R0,#0x1  ;#1
+   20 0000000A BF00            NOP
+   21 0000000C BF00            NOP
+   22 0000000E BF00            NOP
+   23 00000010 BF00            NOP
+   24 00000012 BF00            NOP
+   25 00000014 BF00            NOP
+   26 00000016 4288            CMP              R0,R1
+   27 00000018 D000            BEQ              return
+   28 0000001A E7F4            B                loop        ;#10
+   29 0000001C BC03    return  POP              {R0-R1}
+   30 0000001E F85D EB04       POP              {LR}
+   31 00000022 4770            BX               LR
+   32 00000024                 ALIGN
+   33 00000024                 ENDP
+   34 00000024                 END
+              00027100 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\delay_100.d -o.\objects\delay_100.o -I.\RTE\_Target_1
+ -IC:\Users\kuyucut\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\
+TM4C123 -IE:\Keil\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__
+UVISION_VERSION SETA 528" --predefine="TM4C123GH6PM SETA 1" --list=.\listings\d
+elay_100.lst Delay_100.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 11 in file Delay_100.s
+   Uses
+      None
+Comment: .text unused
+d100ms 00000000
+
+Symbol: d100ms
+   Definitions
+      At line 15 in file Delay_100.s
+   Uses
+      At line 13 in file Delay_100.s
+Comment: d100ms used once
+loop 00000006
+
+Symbol: loop
+   Definitions
+      At line 19 in file Delay_100.s
+   Uses
+      At line 28 in file Delay_100.s
+Comment: loop used once
+return 0000001C
+
+Symbol: return
+   Definitions
+      At line 29 in file Delay_100.s
+   Uses
+      At line 27 in file Delay_100.s
+Comment: return used once
+4 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+M100SEC 00027100
+
+Symbol: M100SEC
+   Definitions
+      At line 9 in file Delay_100.s
+   Uses
+      At line 18 in file Delay_100.s
+Comment: M100SEC used once
+1 symbol
+341 symbols in table

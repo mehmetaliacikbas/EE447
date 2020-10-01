@@ -1,0 +1,46 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000 40020004 
+                       I2C0_MCS
+                               EQU              0x40020004
+    2 00000000         
+    3 00000000         ;PB2 set as I2C-0-SCL
+    4 00000000         ;PB3 set as I2C-0-SDA
+    5 00000000         
+    6 00000000         ;*******************************************************
+                       ********
+    7 00000000         ; Program section
+    8 00000000         ;*******************************************************
+                       ********
+    9 00000000         ;LABEL  DIRECTIVE VALUE   COMMENT
+   10 00000000         
+   11 00000000         
+   12 00000000         
+   13 00000000         
+                       
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\in_i2c.d -o.\objects\in_i2c.o -I.\RTE\_Target_1 -IC:\
+Users\kuyucut\AppData\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C12
+3 -IE:\Keil\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__UVISIO
+N_VERSION SETA 528" --predefine="TM4C123GH6PM SETA 1" --list=.\listings\in_i2c.
+lst In_I2C.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+I2C0_MCS 40020004
+
+Symbol: I2C0_MCS
+   Definitions
+      At line 1 in file In_I2C.s
+   Uses
+      None
+Comment: I2C0_MCS unused
+1 symbol
+334 symbols in table

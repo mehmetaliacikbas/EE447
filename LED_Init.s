@@ -1,0 +1,73 @@
+RBG_LED          EQU 0x40025038
+GPIO_PORTF_DIR   EQU 0x40025400
+GPIO_PORTF_AFSEL EQU 0x40025420
+GPIO_PORTF_DEN   EQU 0x4002551C
+SYSCTL_RCGCGPIO  EQU 0x400FE608
+
+LED_GREEN        EQU 0x8
+LED_BLUE         EQU 0x4
+LED_RED          EQU 0x2
+	
+;***************************************************************
+; Program section
+;***************************************************************
+;LABEL		DIRECTIVE	VALUE			COMMENT
+					
+			AREA 	routines, CODE, READONLY
+			THUMB
+			EXPORT 	LED_INIT
+			EXPORT	RLEDON
+			EXPORT	GLEDON
+			EXPORT	BLEDON
+
+LED_INIT PROC
+		LDR R1, =SYSCTL_RCGCGPIO
+		LDR R0, [R1]
+		ORR R0, R0, #0x20
+		STR R0, [R1]
+
+		NOP
+		NOP
+		NOP 
+
+		LDR R1, =GPIO_PORTF_DIR
+		LDR R0, [R1]
+		ORR R0, R0, #0x0E
+		STR R0, [R1]
+
+		LDR R1, =GPIO_PORTF_AFSEL
+		LDR R0, [R1]
+		BIC R0, R0, #0x0E
+		STR R0, [R1]
+
+		LDR R1, =GPIO_PORTF_DEN
+		LDR R0, [R1]
+		ORR R0, R0, #0x0E
+		STR R0, [R1]
+		BX	LR
+		ENDP
+
+
+RLEDON	PROC
+		LDR R1, =RBG_LED
+		MOV R0, #LED_RED
+		STR R0, [R1]
+		BX LR
+		ENDP
+
+BLEDON	PROC
+		LDR R1, =RBG_LED
+		MOV R0, #LED_BLUE
+		STR R0, [R1]
+		BX LR
+		ENDP
+
+GLEDON 	PROC
+		LDR R1, =RBG_LED
+		MOV R0, #LED_GREEN
+		STR R0, [R1]
+		BX LR
+		ENDP
+			
+		ALIGN
+		END
